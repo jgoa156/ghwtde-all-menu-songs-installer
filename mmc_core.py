@@ -20,6 +20,8 @@ import shutil
 import struct
 import zlib
 
+import mmc_level
+
 MOD_DIR = 'Main Menu Music Collection'
 FSB_NAME = 'Menu_Music_Collection'     # not displayed, so the underscore is fine
 MOD_TITLE = 'Main Menu Music Collection'
@@ -47,6 +49,9 @@ GAMES = [
 
 class MenuMusicError(Exception):
     """A problem to show to the user (bad source, bad game folder, disk full, ...)."""
+
+
+LEVELLED_VOLUME = '6'          # the ini Volume most menu music mods use
 
 
 def norm(s):
@@ -159,6 +164,7 @@ class Clip:
         self.bank, self.off = bank, off
         self.delay, self.volume, self.offset = delay, volume, offset
         self.orig_name = name
+        self.gain_steps = 0        # loudness levelling (mmc_level), from the package's levels file
 
 
 class Source:
@@ -249,6 +255,13 @@ def find_sources(sources_dir):
                     problems.append((folder, str(e)))
     order = {g[0]: i for i, g in enumerate(GAMES)}
     found.sort(key=lambda s: (order.get(s.game[0], len(GAMES)) if s.game else len(GAMES), s.folder.lower()))
+    levels = mmc_level.load_levels(sources_dir)
+    for s in found:
+        lv = levels.get(os.path.basename(s.folder), {})
+        for c in s.clips:
+            c.gain_steps = int(lv.get(c.name, 0))
+            if lv:
+                c.volume = LEVELLED_VOLUME      # levelled audio: every track at the same ini volume
     return found, problems
 
 
@@ -348,6 +361,14 @@ def build_mod(parent, sources, progress=None):
                         f = handles[c.bank] = open(c.bank, 'rb')
                     f.seek(c.off)
                     left = c.nbytes
+                    if c.gain_steps:            # levelled: the whole track through mmc_level (same length)
+                        data = mmc_level.apply_gain(f.read(c.nbytes), c.gain_steps)
+                        if len(data) != c.nbytes:
+                            raise MenuMusicError(f'Unexpected end of {os.path.basename(c.bank)}')
+                        out.write(data)
+                        done += len(data)
+                        report(0.95 * done / max(total, 1), f'Copying {c.name}')
+                        left = 0
                     while left:
                         data = f.read(min(CHUNK, left))
                         if not data:

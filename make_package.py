@@ -6,11 +6,14 @@ Creates <parent>\\GHWTDE-Menu-Music-Collection-Installer_1.0\\ (MenuMusicCollect
 import os
 import shutil
 import sys
+import json
+import subprocess
 import zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import mmc_core as core  # noqa: E402
+import mmc_level  # noqa: E402
 
 NAME = 'GHWTDE-Menu-Music-Collection-Installer_1.0'
 
@@ -24,8 +27,10 @@ def readme(sources):
         'Guitar Hero World Tour: Definitive Edition loads only ONE menu music mod from DATA\\MODS (a second one gives',
         '"ERROR: Exceeded limit of 1 menu music mod." in Logs\\debug.txt). To hear the menu songs of several games',
         'shuffled, they have to live in one mod. This program merges the games you tick into a single mod called',
-        '"Main Menu Music Collection" and puts it in DATA\\MODS. Nothing is converted or re-encoded: the songs are',
-        'copied exactly as the original menu music mods have them.',
+        '"Main Menu Music Collection" and puts it in DATA\\MODS. Nothing is converted or re-encoded. The games\' menu',
+        'songs differ in loudness by up to 8 dB, so each track is levelled to about '
+        f'{mmc_level.TARGET_LUFS:.0f} LUFS the lossless way',
+        '(mp3gain\'s method: each MP3 frame\'s gain field moves in 1.5 dB steps; the audio data is not touched).',
         '',
         'INSTALL',
         '1. Extract this whole folder anywhere (or into your game folder, next to GHWT_Definitive.exe).',
@@ -75,6 +80,27 @@ def readme(sources):
     return text
 
 
+def measure_levels(sources):
+    """{source folder: {track: gain steps}}: each track's integrated loudness (EBU R128) and sample peak, by ffmpeg."""
+    levels = {}
+    for s in sources:
+        lv = {}
+        for c in s.clips:
+            with open(c.bank, 'rb') as f:
+                f.seek(c.off)
+                data = f.read(c.nbytes)
+            r = subprocess.run(['ffmpeg', '-hide_banner', '-nostdin', '-f', 'mp3', '-i', 'pipe:0',
+                                '-af', 'ebur128=framelog=quiet:peak=sample', '-f', 'null', '-'],
+                               input=data, capture_output=True)
+            err = r.stderr.decode(errors='replace').splitlines()
+            lufs = float([l for l in err if l.strip().startswith('I:')][-1].split()[1])
+            peak = float([l for l in err if l.strip().startswith('Peak:')][-1].split()[1])
+            lv[c.name] = mmc_level.steps_for(lufs, peak)
+            print(f'  {s.code:6s} {c.name:30s} {lufs:6.1f} LUFS  peak {peak:5.1f} dB  -> {lv[c.name] * mmc_level.STEP_DB:+.1f} dB')
+        levels[os.path.basename(s.folder)] = lv
+    return levels
+
+
 def main():
     if len(sys.argv) != 3:
         sys.exit(__doc__)
@@ -91,6 +117,10 @@ def main():
     shutil.copy2(exe, pkg)
     for s in sources:
         shutil.copytree(s.folder, os.path.join(pkg, 'sources', os.path.basename(s.folder)))
+    levels = measure_levels(sources)
+    for folder in (sources_dir, os.path.join(pkg, 'sources')):
+        with open(os.path.join(folder, mmc_level.LEVELS_FILE), 'w', encoding='utf-8') as f:
+            json.dump(levels, f, indent=1)
     with open(os.path.join(pkg, 'README.txt'), 'w', newline='') as f:
         f.write(readme(sources))
     zpath = pkg + '.zip'
