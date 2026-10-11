@@ -3,6 +3,10 @@
 By WitchDoctoR. Merges the menu music of the Guitar Hero games you tick into ONE menu music mod for
 *Guitar Hero World Tour: Definitive Edition* (the DE loads only one).
 
+**Also here:** [GHWoR Main Menu Music 1.0](ghwor-menu-music/README.md), Warriors of Rock's 14 menu songs as a
+stand-alone menu music mod: [`releases/GHWoR-Main-Menu-Music_1.0.zip`](releases/GHWoR-Main-Menu-Music_1.0.zip)
+(this repo replaces the old ghwtde-ghwor-menu-music-mod repo).
+
 **Loudness:** the games' menu songs differed by up to 8 dB (-5.4 to -13.7 LUFS). The installer levels every track to
 about -13 LUFS losslessly (mp3gain's method, `mmc_level.py`: each MP3 frame's global_gain moves in 1.5 dB steps; the
 steps are measured once by `make_package.py` and shipped in `sources/mmc_levels.json`).
