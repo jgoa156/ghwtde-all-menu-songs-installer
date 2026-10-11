@@ -11,9 +11,10 @@ stand-alone menu music mod: [`releases/GHWoR-Main-Menu-Music_1.0.zip`](releases/
 about -13 LUFS losslessly (mp3gain's method, `mmc_level.py`: each MP3 frame's global_gain moves in 1.5 dB steps; the
 steps are measured once by `make_package.py` and shipped in `sources/mmc_levels.json`).
 
-**Status:** source here; the 1.0 package (exe + the merged games' menu music, ~300 MB) is not published yet: it is
-too big for a git commit (GitHub's 100 MB file limit) and it bundles other modders' menu music mods (credits below),
-so it waits for a GitHub Release and the authors' blessing. Build it yourself with `build.bat` + `make_package.py`.
+**Download 1.0:** [`releases/GHWTDE-All-Menu-Songs-Installer_1.0.7z.001`](releases/GHWTDE-All-Menu-Songs-Installer_1.0.7z.001)
+plus `.002`, `.003`, `.004` (one archive split in four, GitHub refuses files over 100 MB): download all four into
+one folder and open the `.001` with 7-Zip (it reads the others). Inside: `MenuMusicCollection.exe`, `sources\` and
+the README. Build it yourself with `build.py` + `make_package.py`.
 
 ```
 WHAT IT DOES
