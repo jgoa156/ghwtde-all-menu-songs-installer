@@ -1,4 +1,4 @@
-# GHWT:DE All Menu Songs Installer (Menu Music Collection 1.0)
+﻿# GHWT:DE All Menu Songs Installer (Menu Music Collection 1.0)
 
 By WitchDoctoR. Merges the menu music of the Guitar Hero games you tick into ONE menu music mod for
 *Guitar Hero World Tour: Definitive Edition* (the DE loads only one).
@@ -11,10 +11,7 @@ stand-alone menu music mod: [`releases/GHWoR-Main-Menu-Music_1.0.zip`](releases/
 about -13 LUFS losslessly (mp3gain's method, `mmc_level.py`: each MP3 frame's global_gain moves in 1.5 dB steps; the
 steps are measured once by `make_package.py` and shipped in `sources/mmc_levels.json`).
 
-**Download 1.0:** [`releases/GHWTDE-All-Menu-Songs-Installer_1.0.7z.001`](releases/GHWTDE-All-Menu-Songs-Installer_1.0.7z.001)
-plus `.002`, `.003`, `.004` (one archive split in four, GitHub refuses files over 100 MB): download all four into
-one folder and open the `.001` with 7-Zip (it reads the others). Inside: `MenuMusicCollection.exe`, `sources\` and
-the README. Build it yourself with `build.py` + `make_package.py`.
+**Download 1.0:** `GHWTDE-All-Menu-Songs-Installer_1.0.zip` (313 MB) from the [Releases page](https://github.com/jgoa156/ghwtde-all-menu-songs-installer/releases/latest). Extract it anywhere; inside: `MenuMusicCollection.exe`, `sources\` and the README. Build it yourself with `build.py` + `make_package.py`.
 
 ```
 WHAT IT DOES
